@@ -46,5 +46,5 @@ void delete_word (struct tree *);
 /*
     Créer un arbre de type balise 
 */
-struct tree * new_word (char*, bool);
+struct tree * new_balise (char* label, bool space);
 #endif
