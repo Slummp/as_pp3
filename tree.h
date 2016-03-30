@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #ifndef TREE_H
+#define TREE_H
 struct tree;
 struct attributes;
 enum type {tree, word};        //typage des nœuds: permet de savoir si un nœud construit

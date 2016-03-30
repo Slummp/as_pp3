@@ -1,3 +1,5 @@
-arbre
+Arbre.output
 lex.yy.c
 Arbre.tab.c
+Arbre.tab.h
+
