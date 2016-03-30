@@ -7,3 +7,6 @@
 - Fabien Haureils
 - Ali El Idrissi
 
+##Branches :
+- Développement : dev
+- Stable : master
