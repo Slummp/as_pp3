@@ -18,7 +18,9 @@ void yyerror(char *);
 
 %type  <attribut>attr
 
-%token <txt>TXT
+%token <txt>TXT LABEL
+
+%token SPACE
 
 %start start
 
@@ -26,20 +28,65 @@ void yyerror(char *);
 start : balise {//tree_dump();
                 }
 
-balise:     TXT '[' attr ']' '{' contenu '}' {$$ = new_balise($1, false); $$->attr = $3; $$->daughters = $6;}
-        |   TXT '{' contenu '}' {$$ = new_balise($1, false); $$->attr = NULL; $$->daughters = $3;}
+balise:     LABEL '[' attr ']' '{' contenu '}'
+            {
+                $$ = new_balise($1, false);
+                $$->attr = $3;
+                $$->daughters = $6;
+            }
+        |   LABEL '{' contenu '}'
+            {
+                $$ = new_balise($1, false);
+                $$->attr = NULL;
+                $$->daughters = $3;
+            }
+        |   LABEL '/'
+            {
+                
+            }
+        |   LABEL '[' attr ']' '/'
+            {
+                
+            }
         ;
 
-attr :     attr TXT '=' '"' TXT  '"' { $$ = new_attributes($2, $5); $$->next = $1; }
-        |  %empty           { $$ = NULL; }
+attr :      attr LABEL '=' '"' TXT  '"'
+            {
+                $$ = new_attributes($2, $5);
+                $$->next = $1;
+            }
+        |   %empty
+            {
+                $$ = NULL;
+            }
         ;
         
-contenu:  '"' texte '"' contenu {  }
-        | balise contenu {}
-        | %empty
+contenu:    '"' texte '"' contenu
+            {
+
+            }
+        |   balise contenu
+            {
+
+            }
+        |   %empty
+            {
+
+            }
         ;
 
-texte : TXT texte {$$ = new_word($1, false); $$->right = $2;}
-        | texte SPACE {$$ = $1; $$->space = true;}
-        | %empty {$$ = NULL;}
+texte:      TXT texte
+            {
+                $$ = new_word($1, false);
+                $$->right = $2;
+            }
+        |   texte SPACE
+            {
+                $$ = $1;
+                $$->space = true;
+            }
+        |   %empty
+            {
+                $$ = NULL;
+            }
         ;
