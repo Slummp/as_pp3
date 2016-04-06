@@ -9,33 +9,37 @@
 
 
 %%
-"exit" { 
+"exit" { return EOL; }
 ([a-zA-Z]|_[a-zA-Z0-9'\._])[a-zA-Z0-9'\._]* {
 	yylval.txt = strdup(yytext);
-        printf("label\n");
+        printf("__LABEL\n");
         return LABEL;
 }
 
 \" {
+    printf("__TexteDébut\n");
 	BEGIN TEXT;
 }
 
-\/ { printf("coucou\n"); return '/'; }
-\[ {return '[';}
-\] {return ']';}
+\/ { printf("__Slash\n"); return '/'; }
+\[ {printf("__CrochetOuvrant\n");return '[';}
+\] {printf("__CrochetFermant\n");return ']';}
 \{ {return '{';}
 \} {return '}';}
-
-<TEXT>[[^\"[:space:]]|\\\"]* {
-	yylval.txt = strdup(yytext);
-	return TXT;
-}
+\= {return '='; }
 
 <TEXT>[:space:]* {
 	return SPACE;
 }
 
+<TEXT>(([^\"|[:^space:]])|\\\")* {
+	yylval.txt = strdup(yytext);
+	return TXT; /* [[^\"[: space:]]|\\\"]* */
+}
+
+
 <TEXT>\" {
+    printf("__TexteFin\n");
 	BEGIN INITIAL;
 }
 
