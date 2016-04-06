@@ -12,20 +12,21 @@ void yyerror(char *);
 
 %union{
     struct attributes *attribut;
+    struct tree * tree;
     char* txt;
 }
 
 
 %type  <attribut>attr
-
-%token <txt>TXT LABEL
+%type  <tree>		balise contenu texte
+%token <txt>TXT LABEL EOL
 
 %token SPACE
 
 %start start
 
 %%
-start : balise {//tree_dump();
+start : balise EOL { printf("something\n"); return 0;
                 }
 
 balise:     LABEL '[' attr ']' '{' contenu '}'
@@ -33,26 +34,31 @@ balise:     LABEL '[' attr ']' '{' contenu '}'
                 $$ = new_balise($1, false);
                 $$->attr = $3;
                 $$->daughters = $6;
+		printf("label avec attribut et contenu\n");
             }
         |   LABEL '{' contenu '}'
             {
                 $$ = new_balise($1, false);
                 $$->attr = NULL;
                 $$->daughters = $3;
+		printf("label sans attribut mais contenu\n");
             }
         |   LABEL '/'
             {
-                
+		$$ = new_balise($1, false);
+		printf("label sans attribut ni contenu\n");
             }
         |   LABEL '[' attr ']' '/'
             {
-                
+		$$ = new_balise($1, false);
+                $$->attr = $3;
+                printf("label avec attribut sans contenu\n");
             }
         ;
 
-attr :      attr LABEL '=' '"' TXT  '"'
+attr :      attr LABEL '=' TXT
             {
-                $$ = new_attributes($2, $5);
+                $$ = new_attributes($2, $4);
                 $$->next = $1;
             }
         |   %empty
