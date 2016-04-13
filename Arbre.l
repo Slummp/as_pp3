@@ -5,12 +5,12 @@
 %}
 
 %option noinput nounput
-%x TEXT
+%x TEXT ECHAP
 
 
 %%
 "exit" { return EOL; }
-([a-zA-Z]|_[a-zA-Z0-9'\._])[a-zA-Z0-9'\._]* {
+([a-zA-Z]|_[a-zA-Z0-9'\._])[a-zA-Z0-9'\._]*/[\=\{\[\/] {
 	yylval.txt = strdup(yytext);
         printf("__LABEL\n");
         return LABEL;
@@ -21,25 +21,32 @@
 	BEGIN TEXT;
 }
 
-\/ { printf("__Slash\n"); return '/'; }
-\[ {printf("__CrochetOuvrant\n");return '[';}
-\] {printf("__CrochetFermant\n");return ']';}
-\{ {return '{';}
-\} {return '}';}
-\= {return '='; }
+\/ { printf("__Slash\n");           return '/';}
+\[ {printf("__CrochetOuvrant\n");   return '[';}
+\] {printf("__CrochetFermant\n");   return ']';}
+\{ {printf("__AccoladeOuvrante\n"); return '{';}
+\} {printf("__AccoladeFermante\n"); return '}';}
+\= {printf("__Egale\n");            return '=';}
 
-<TEXT>[:space:]* {
+<TEXT>[[:space:]]+ {
+    printf("__Space\n");
 	return SPACE;
 }
-
-<TEXT>(([^\"|[:^space:]])|\\\")* {
-	yylval.txt = strdup(yytext);
-	return TXT; /* [[^\"[: space:]]|\\\"]* */
+<TEXT>\\ {
+    printf("__Echappement\n");
+    REJECT;
+    BEGIN ECHAP;
 }
-
-
+<ECHAP>. { yymore(); BEGIN TEXT; }
+<TEXT>[^\"\\]* {
+    printf("__Texte %s\n", yytext);
+    yymore();
+	
+}
 <TEXT>\" {
-    printf("__TexteFin\n");
+    yylval.txt = strdup(yytext);	
+    printf("__TexteFin %s\n", yytext);
 	BEGIN INITIAL;
+    return TXT; 
 }
 

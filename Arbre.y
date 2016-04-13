@@ -26,31 +26,32 @@ void yyerror(char *);
 %start start
 
 %%
-start : balise EOL { printf("- Balise -\n"); return 0;
+start : balise start EOL { printf("- Balise -\n"); 
                 }
+                | %empty { printf(" - FIN - \n"); return 0; }
 
 balise:     LABEL '[' attr ']' '{' contenu '}'
             {
                 $$ = new_balise($1, false);
                 $$->attr = $3;
                 $$->daughters = $6;
-		        printf("-- label avec attribut et contenu\n");
+		        printf("-- Label avec attribut et contenu\n");
             }
         |   LABEL '{' contenu '}'
             {
                 $$ = new_balise($1, false);
                 $$->attr = NULL;
                 $$->daughters = $3;
-		        printf("-- label sans attribut mais contenu\n");
+		        printf("-- Label sans attribut mais contenu\n");
             }
         |   LABEL '/'
             {
 		        $$ = new_balise($1, false);
-		        printf("-- label sans attribut ni contenu\n"); 
+		        printf("-- Label sans attribut ni contenu\n"); 
             }
         |   LABEL '[' attr ']' '/'
             {
-                printf("-- label avec attribut sans contenu\n");
+                printf("-- Label avec attribut sans contenu\n");
 		        $$ = new_balise($1, false);
                 $$->attr = $3;
             }

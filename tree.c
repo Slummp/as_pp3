@@ -49,7 +49,7 @@ void delete_word (struct tree *t){
 */
 struct tree * new_balise (char* label, bool space){
     struct tree *t = malloc(sizeof(*t));
-    t->label = strdup(label);
+    t->label = label;
     t->daughters = NULL;
     t->right = NULL;
     t->space = space;
