@@ -1,16 +1,16 @@
 %{
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include "tree.h"
-int yylex(void);
-void yyerror(char *);
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include <stdbool.h>
+    #include <string.h>
+    #include "tree.h"
 
-
+    int yylex(void);
+    void yyerror(char *);
 %}
 
-%union{
+%union
+{
     struct attributes *attribut;
     struct tree * tree;
     char* txt;
@@ -18,17 +18,25 @@ void yyerror(char *);
 
 
 %type  <attribut>attr
-%type  <tree>		balise contenu texte
-%token <txt>TXT LABEL EOL
+%type  <tree>balise contenu texte
 
+%token <txt>TXT LABEL FINTEXTE
 %token SPACE
 
 %start start
 
 %%
-start : balise start EOL { printf("- Balise -\n"); 
-                }
-                | %empty { printf(" - FIN - \n"); return 0; }
+
+start :     balise start
+            {
+                printf("- Balise -\n"); 
+            }
+        |   %empty
+            {
+                printf(" - FIN - \n");
+                return 0;
+            }
+        ;
 
 balise:     LABEL '[' attr ']' '{' contenu '}'
             {
@@ -55,12 +63,17 @@ balise:     LABEL '[' attr ']' '{' contenu '}'
 		        $$ = new_balise($1, false);
                 $$->attr = $3;
             }
+        |   '{' contenu '}'
+            {
+                $$ = $2;
+                printf("-- Foret\n");
+            }
         ;
 
-attr :      attr LABEL '=' TXT
+attr :      attr LABEL '=' '"' TXT '"'
             {
                 printf("-- Attribut\n");
-                $$ = new_attributes($2, $4);
+                $$ = new_attributes($2, $5);
                 $$->next = $1;
             }
         |   %empty
@@ -68,12 +81,30 @@ attr :      attr LABEL '=' TXT
                 $$ = NULL;
             }
         ;
-        
+    
 contenu:    '"' texte '"' contenu
             {
-                printf("-- Texte - Contenu\n");
+                printf("-- Texte");
+                if ($2 != NULL) 
+                {
+                    while($2->right != NULL)
+                    {
+                        printf("- %s", $2->label);
+                        $2 = $2->right;
+                    }
+
+                    printf("2 %s", $2->label);
+
+                    if($2->space)
+                        printf(" ");
+                }
+                printf("\n");
             }
         |   balise contenu
+            {
+                printf("-- Balise - Contenu\n");
+            }
+        |   balise '"' SPACE texte '"' contenu
             {
                 printf("-- Balise - Contenu\n");
             }
@@ -83,25 +114,35 @@ contenu:    '"' texte '"' contenu
             }
         ;
 
-texte:      TXT texte
+texte:      TXT SPACE texte
             {
-                printf("-- Texte\n");
-                $$ = new_word($1, false);
-                $$->right = $2;
+                $$ = new_word($1,true);
+                $$->right = $3;
+                //$$->space = true;
+                //printf("-- Texte %s SPACE arbre\n", $1);
             }
-        |   texte SPACE
+        |   TXT TXT texte
             {
-                printf("-- Texte SPACE\n");
-                $$ = $1;
-                $$->space = true;
+                $$ = new_word(strncat($1, $2, strlen($2)),true);
+                $$->right = $3;
+                //$$->space = true;
+                //printf("-- Texte %s SPACE arbre\n", $1);
+            }
+        |   TXT
+            {
+                $$ = new_word($1,false);
+                $$->right = NULL;
+                //printf("-- TEXTE %s /// %s\n", $1, $2);
             }
         |   %empty
             {
-                printf("-- Texte VIDE\n");
+                //printf("-- Texte FIN\n");
                 $$ = NULL;
             }
         ;
+
 %%
+
 int main(void) {
     fflush(stdout);
 	yyparse();
